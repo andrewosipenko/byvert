@@ -23,6 +23,7 @@ public class Grammar {
         String normalizedWord = normalize(word);
         Paradigm[] paradigms = grammarFinder.getParadigms(word);
         return Arrays.stream(paradigms)
+            .parallel()
             .map(Paradigm::getVariant)
             .flatMap(Collection::stream)
             .filter(variant -> isWordVariant(normalizedWord, variant))
