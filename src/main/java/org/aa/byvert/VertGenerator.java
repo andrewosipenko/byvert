@@ -4,9 +4,13 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class VertGenerator {
+    private final Pattern pattern = Pattern.compile("\\b");
+
     public void generate(BufferedReader reader, BufferedWriter writer, Grammar grammar) throws UncheckedIOException {
         try {
             generateInternally(reader, writer, grammar);
@@ -17,14 +21,12 @@ public class VertGenerator {
     }
 
     private void generateInternally(BufferedReader reader, BufferedWriter writer, Grammar grammar) throws IOException {
-        Pattern pattern = Pattern.compile("[\b\s]");
-
         writeOrThrow("<doc>\n", writer);
 
         String line;
         while ((line = reader.readLine()) != null) {
             if(!line.isBlank()) {
-                generateP(writer, grammar, pattern, line);
+                generateP(writer, grammar, line);
             }
         }
 
@@ -32,14 +34,20 @@ public class VertGenerator {
         writer.flush();
     }
 
-    private void generateP(BufferedWriter writer, Grammar grammar, Pattern pattern, String line) {
+    private void generateP(BufferedWriter writer, Grammar grammar, String line) {
         writeOrThrow("<p>\n", writer);
 
-        pattern.splitAsStream(line).forEach(token ->
+        splitLine(line).forEach(token ->
             generateVertLine(token, writer, grammar)
         );
 
         writeOrThrow("</p>\n", writer);
+    }
+
+    Stream<String> splitLine(String line) {
+        return pattern.splitAsStream(line)
+            .map(String::trim)
+            .filter(Predicate.not(String::isEmpty));
     }
 
     private void generateVertLine(String token, BufferedWriter writer, Grammar grammar) {
