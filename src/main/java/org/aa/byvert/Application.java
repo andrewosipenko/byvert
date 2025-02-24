@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.logging.Logger;
 
 public class Application {
@@ -21,6 +23,8 @@ public class Application {
 
     public void generateVert(Path source, Path target) throws UncheckedIOException {
         log.info("Generating Vert from corpus " + source +  " to " + target);
+        Instant start = Instant.now();
+
         VertGenerator vertGenerator = new VertGenerator();
         try(
             BufferedReader reader = Files.newBufferedReader(source);
@@ -30,5 +34,8 @@ public class Application {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+
+        Instant finish = Instant.now();
+        log.info("Generated Vert in " + Duration.between(start, finish).toMillis() + " ms");
     }
 }
