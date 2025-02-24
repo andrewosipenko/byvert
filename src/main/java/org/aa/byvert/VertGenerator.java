@@ -57,9 +57,11 @@ public class VertGenerator {
             throw new UncheckedIOException(e);
         }
 
-        grammar.findLemma(token).ifPresent(lemma ->
-            writeNextToken(lemma, writer)
-        );
+        grammar.findLemma(token)
+            .map(Grammar::normalize)
+            .ifPresent(lemma ->
+                writeNextToken(lemma, writer)
+            );
 
         writeOrThrow("\n", writer);
     }

@@ -38,7 +38,7 @@ public class Grammar {
             .anyMatch(word::equals);
     }
 
-    private static String normalize(String word) {
+    public static String normalize(String word) {
         return StressUtils.unstress(word);
     }
 }
