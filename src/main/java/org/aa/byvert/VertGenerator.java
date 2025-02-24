@@ -37,9 +37,17 @@ public class VertGenerator {
     private void generateP(BufferedWriter writer, Grammar grammar, String line) {
         writeOrThrow("<p>\n", writer);
 
-        splitLine(line).forEach(token ->
-            generateVertLine(token, writer, grammar)
-        );
+        record VertLine (String token, String lemma){}
+
+        splitLine(line)
+            .map(token ->
+                new VertLine(
+                    token,
+                    getLemma(token, grammar)
+                )
+            ).forEach(vertLine ->
+                writeVertLine(writer, vertLine.token, vertLine.lemma)
+            );
 
         writeOrThrow("</p>\n", writer);
     }
@@ -50,25 +58,26 @@ public class VertGenerator {
             .filter(Predicate.not(String::isEmpty));
     }
 
-    private void generateVertLine(String token, BufferedWriter writer, Grammar grammar) {
+    private void writeVertLine(BufferedWriter writer, String firstString, String... otherStrings) {
         try {
-            writer.write(token);
+            writer.write(firstString);
+
+            for(String s : otherStrings) {
+                if(s != null){
+                    writer.write('\t');
+                    writer.write(s);
+                }
+            }
+            writer.newLine();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-
-        grammar.findLemma(token)
-            .map(Grammar::normalize)
-            .ifPresent(lemma ->
-                writeNextToken(lemma, writer)
-            );
-
-        writeOrThrow("\n", writer);
     }
 
-    private void writeNextToken(String token, BufferedWriter writer) {
-        writeOrThrow("\t", writer);
-        writeOrThrow(token, writer);
+    private String getLemma(String token, Grammar grammar) {
+        return grammar.findLemma(token)
+            .map(Grammar::normalize)
+            .orElse(null);
     }
 
     private void writeOrThrow(String token, BufferedWriter writer) throws UncheckedIOException {
@@ -79,3 +88,4 @@ public class VertGenerator {
         }
     }
 }
+
